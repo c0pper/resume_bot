@@ -25,7 +25,9 @@ def generate_text(input_sentence):
 # Define Command Handlers
 def resume(update: Update, context: CallbackContext):
     """Handler for /start command"""
-    if not update.message.reply_to_message:
+    input_sentence = update.message.reply_to_message
+    if not input_sentence:
+        print("input:", input_sentence)
         update.message.reply_text("Rispondi a un messaggio con /riassunto per riassumerlo")
     else:
         input_sentence = update.message.reply_to_message["text"]
