@@ -31,11 +31,14 @@ def resume(update: Update, context: CallbackContext):
         update.message.reply_text("Rispondi a un messaggio con /riassunto per riassumerlo")
     else:
         input_sentence = update.message.reply_to_message["text"]
-        print("input:", input_sentence)
-        update.message.reply_text("Sto riassumendo...")
-        output = newsum(input_sentence)[0]["summary_text"]
-        print(output)
-        update.message.reply_text(output)
+        if len(input_sentence) < 550:
+            update.message.reply_text("Il testo è troppo corto.")
+        else:
+            print("input:", input_sentence)
+            update.message.reply_text("Sto riassumendo...")
+            output = newsum(input_sentence)[0]["summary_text"]
+            print(output)
+            update.message.reply_text(output)
 
 
 def main():
