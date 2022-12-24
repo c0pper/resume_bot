@@ -31,7 +31,7 @@ def resume(update: Update, context: CallbackContext):
         update.message.reply_text("Rispondi a un messaggio con /riassunto per riassumerlo")
     else:
         input_sentence = update.message.reply_to_message["text"]
-        if len(input_sentence) < 550:
+        if len(input_sentence) < 800:
             update.message.reply_text("Il testo è troppo corto.")
         else:
             print("input:", input_sentence)
