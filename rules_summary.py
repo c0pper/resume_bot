@@ -1,14 +1,12 @@
 from nltk.tokenize import sent_tokenize, word_tokenize
-from nltk.corpus import stopwords
 from string import punctuation
 from nltk.probability import FreqDist
 from collections import defaultdict
 from heapq import nlargest
 
-
 with open("stopwords-it.txt", "r", encoding="UTF-8") as f:
     sw_list = list(map(str.strip, f.readlines()))
-_stopwords = set(stopwords.words("italian") + list(punctuation) + sw_list)
+_stopwords = set(list(punctuation) + sw_list)
 
 
 def get_frequencies(text: str):
