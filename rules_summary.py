@@ -29,16 +29,23 @@ def update_sent_raking(text):
     return ranking
 
 
-def get_summary_sent_num(text: str, summary_percentage: int = 50):
+def get_summary_sent_num_from_percent(text: str, summary_percentage: int = 50):
     sents_num = len(sent_tokenize(text))
     num = int(sents_num*summary_percentage/100)
+
     return num
 
 
-def rules_summary(text, summary_percentage: int = 50):
+def get_summary_percent_num_from_sent(text: str, num):
+    sents_num = len(sent_tokenize(text))
+    percent_desired_sent = int(num / sents_num * 100)
+    return percent_desired_sent
+
+
+def rules_summary(text, summary_percentage: int = 40):
     sents = sent_tokenize(text)
     ranking = update_sent_raking(text)
-    sents_idx = nlargest(get_summary_sent_num(text, summary_percentage), ranking, key=ranking.get)
+    sents_idx = nlargest(get_summary_sent_num_from_percent(text, summary_percentage), ranking, key=ranking.get)
     output = "\n".join([sents[j] for j in sorted(sents_idx)])
     print(output)
     return output
