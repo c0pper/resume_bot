@@ -3,6 +3,8 @@ from string import punctuation
 from nltk.probability import FreqDist
 from collections import defaultdict
 from heapq import nlargest
+import nltk
+nltk.download("punkt")
 
 with open("stopwords-it.txt", "r", encoding="UTF-8") as f:
     sw_list = list(map(str.strip, f.readlines()))
