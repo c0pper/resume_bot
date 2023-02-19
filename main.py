@@ -1,12 +1,12 @@
 import logging
 import os
 import random
+import telegram.error
 from telegram import Update, ReplyKeyboardMarkup, ReplyKeyboardRemove
 from telegram.ext import Updater, Dispatcher, CommandHandler, MessageHandler, Filters, CallbackContext, \
     ConversationHandler
-
 # from text_generation import newsum
-from rules_summary import rules_summary
+from revChatGPT.V1 import Chatbot
 
 # Enable logging
 logging.basicConfig(
@@ -16,12 +16,61 @@ logger = logging.getLogger(__name__)
 
 PORT = int(os.environ.get('PORT', '8433'))
 TELE_TOKEN = os.environ.get('TELE_TOKEN')
-MIN_TXT_LEN = 800
 
 
+# def generate_text(input_sentence):
+#     output = newsum(input_sentence)
+#
+#     return output
 
 # Define Command Handlers
-def get_input_text(update: Update):
+# def resume(update: Update, context: CallbackContext):
+#     """Handler for /start command"""
+#     input_sentence = update.message.reply_to_message
+#     if not input_sentence:
+#         print("input:", input_sentence)
+#         update.message.reply_text("Rispondi a un messaggio con /riassunto per riassumerlo")
+#     else:
+#         input_sentence = update.message.reply_to_message["text"]
+#         if len(input_sentence) < 800:
+#             update.message.reply_text("Il testo è troppo corto.")
+#         else:
+#             print("input:", input_sentence)
+#             update.message.reply_text("Sto riassumendo...")
+#             output = newsum(input_sentence)[0]["summary_text"]
+#             print(output)
+#             update.message.reply_text(output)
+
+
+chatbot = Chatbot(config={
+    "email": f"{os.environ.get('chatgpt_login')}",
+    "password": f"{os.environ.get('chatgpt_pw')}"
+})
+
+
+def chat_gpt_output_parser(prompt: str, update: Update, context: CallbackContext):
+    reply = update.message.reply_text("Sto scrivendo...")
+    gpt_out = ""
+    for idx, data in enumerate(chatbot.ask(prompt)):
+        gpt_out = data["message"]
+        print(gpt_out)
+        if gpt_out:
+            if idx % 18 == 0:
+                try:
+                    context.bot.editMessageText(chat_id=update.message.chat_id,
+                                                message_id=reply.message_id,
+                                                text=gpt_out)
+                except telegram.error.BadRequest:
+                    pass
+    try:
+        context.bot.editMessageText(chat_id=update.message.chat_id,
+                                    message_id=reply.message_id,
+                                    text=gpt_out)
+    except telegram.error.BadRequest:
+        pass
+
+
+def get_replied_message_text(update: Update):
     """Handler for /start command"""
     input_text = update.message.reply_to_message
     if not input_text:
@@ -32,32 +81,11 @@ def get_input_text(update: Update):
         return input_text
 
 
-def summarize(update: Update, context: CallbackContext,  mode: str = "rules"):  # "ml" / "rules"
-    input_text = get_input_text(update)
-
-    if len(input_text) < MIN_TXT_LEN:
-        update.message.reply_text("Il testo è troppo corto.")
-    else:
-        print("input:", input_text)
-        print(update.message)
-        update.message.reply_text("Sto riassumendo...")
-
-        if mode == "ml":
-            # output = ML_resume(input_text, update)
-            # print(output)
-            # update.message.reply_text
-            raise NotImplementedError
-        elif mode == "rules":
-            output = rules_summary(input_text)
-            print(output)
-            update.message.reply_text(output)
-        else:
-            raise NotImplementedError
-
-
-# def ML_resume(input_text: str, update: Update):
-#     output = newsum(input_text)[0]["summary_text"]
-#     return output
+def summarize(update: Update, context: CallbackContext, mode: str = "rules"):  # "ml" / "rules"
+    input_text = f"riassumi questo testo\n\n{get_replied_message_text(update)}"
+    print("input:", input_text)
+    print(update.message)
+    chat_gpt_output_parser(input_text, update, context)
 
 
 def main():
