@@ -1,6 +1,8 @@
 import logging
 import os
 import random
+import pytz
+import datetime
 import telegram.error
 from telegram import Update, ReplyKeyboardMarkup, ReplyKeyboardRemove
 from telegram.ext import Updater, Dispatcher, CommandHandler, MessageHandler, Filters, CallbackContext, \
@@ -48,6 +50,22 @@ chatbot = Chatbot(config={
 })
 
 
+def check_time(from_: int, to: int):
+    # Set the timezone to Europe/Rome
+    rome_tz = pytz.timezone('Europe/Rome')
+    # Get the current time in Rome
+    current_time = datetime.datetime.now(rome_tz)
+    # Get the hour component of the current time
+    current_hour = current_time.hour
+
+    # Check if the current hour is between 7 and 11 (inclusive)
+    if from_ <= current_hour <= to:
+        # If it is, print a greeting
+        return True
+    else:
+        return False
+
+
 def chat_gpt_output_parser(prompt: str, update: Update, context: CallbackContext):
     reply = update.message.reply_text("Sto scrivendo...")
     gpt_out = ""
@@ -85,7 +103,14 @@ def summarize(update: Update, context: CallbackContext, mode: str = "rules"):  #
     input_text = f"riassumi questo testo\n\n{get_replied_message_text(update)}"
     print("input:", input_text)
     print(update.message)
-    chat_gpt_output_parser(input_text, update, context)
+    if update.message.from_user["id"] != 1748826398:
+        chat_gpt_output_parser(input_text, update, context)
+    else:
+        time_is_valid = check_time(7, 12)
+        if time_is_valid:
+            chat_gpt_output_parser(input_text, update, context)
+        else:
+            update.message.reply_text("Lorenzo hai rotto")
 
 
 def main():
