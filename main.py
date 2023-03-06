@@ -106,7 +106,7 @@ def summarize(update: Update, context: CallbackContext, mode: str = "rules"):  #
     if update.message.from_user["id"] != 1748826398:
         chat_gpt_output_parser(input_text, update, context)
     else:
-        time_is_valid = check_time(7, 12)
+        time_is_valid = check_time(16, 18)
         if time_is_valid:
             chat_gpt_output_parser(input_text, update, context)
         else:
